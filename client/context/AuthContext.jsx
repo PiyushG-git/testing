@@ -4,8 +4,8 @@ import { createContext, useEffect, useState } from "react";
 import axios from 'axios'
 import toast from "react-hot-toast"; // FIX 8: removed unused Toaster import (rendered in App.jsx)
 import {io} from "socket.io-client";
-//port url
-const backendUrl = import.meta.env.VITE_BACKEND_URL;
+// In production (same-origin), falls back to current server URL
+const backendUrl = import.meta.env.VITE_BACKEND_URL || window.location.origin;
 axios.defaults.baseURL = backendUrl;
 export const AuthContext = createContext();
 export const AuthProvider = ({children}) =>{

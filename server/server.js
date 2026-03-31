@@ -2,18 +2,25 @@ import express from "express";
 import "dotenv/config";
 import cors from "cors";
 import http from "http";
+import path from "path";
+import { fileURLToPath } from "url";
 import { connectDB } from "./lib/db.js";
 import userRouter from "./routes/userRoutes.js";
 import messageRouter from "./routes/messageRoutes.js";
 import { Server } from "socket.io";
 
+// ESM-compatible __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const app = express();
 const server = http.createServer(app);
 
-// FIX 6: Restrict CORS to CLIENT_URL env var in production, localhost in dev
+// Same-origin in production (frontend served by this server), so no CORS needed.
+// In dev, allow Vite dev server on port 5173.
 const allowedOrigin =
     process.env.NODE_ENV === "production"
-        ? process.env.CLIENT_URL
+        ? false               // same-origin — no CORS header needed
         : "http://localhost:5173";
 
 // ── Socket.IO Setup ────────────────────────────────────────────────────────
@@ -52,6 +59,17 @@ app.use(express.json({ limit: "10mb" })); // Base64 inflates size ~33%, so allow
 app.get("/api/status", (req, res) => res.send("Server is live"));
 app.use("/api/auth", userRouter);
 app.use("/api/messages", messageRouter);
+
+// ── Serve Frontend in Production ───────────────────────────────────────────
+if (process.env.NODE_ENV === "production") {
+    // Serve built React/Vite files from server/dist
+    app.use(express.static(path.join(__dirname, "dist")));
+    // Catch-all: send index.html for any non-API route (React Router handles it)
+    // Note: Express 5 requires named wildcards — '/*splat' not just '*'
+    app.get("/*splat", (req, res) => {
+        res.sendFile(path.join(__dirname, "dist", "index.html"));
+    });
+}
 
 // ── Start Server ───────────────────────────────────────────────────────────
 await connectDB();
