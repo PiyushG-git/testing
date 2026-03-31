@@ -19,7 +19,7 @@ const server = http.createServer(app);
 // Same-origin in production (frontend served by this server), so no CORS needed.
 // In dev, allow Vite dev server on port 5173.
 const allowedOrigin =
-    process.env.NODE_ENV === "production"
+    process.env.NODE_ENV && process.env.NODE_ENV.trim() === "production"
         ? false               // same-origin — no CORS header needed
         : "http://localhost:5173";
 
@@ -61,13 +61,21 @@ app.use("/api/auth", userRouter);
 app.use("/api/messages", messageRouter);
 
 // ── Serve Frontend in Production ───────────────────────────────────────────
-if (process.env.NODE_ENV === "production") {
+// Trim in case there are accidental trailing spaces in Render env vars
+const isProduction = process.env.NODE_ENV && process.env.NODE_ENV.trim() === "production";
+
+if (isProduction) {
     // Serve built React/Vite files from server/dist
-    app.use(express.static(path.join(__dirname, "dist")));
+    const distPath = path.join(__dirname, "dist");
+    app.use(express.static(distPath));
+    
     // Catch-all: send index.html for any non-API route (React Router handles it)
-    // Note: Express 5 requires named wildcards — '/*splat' not just '*'
-    app.get("/*splat", (req, res) => {
-        res.sendFile(path.join(__dirname, "dist", "index.html"));
+    app.use((req, res) => {
+        res.sendFile(path.join(distPath, "index.html"), (err) => {
+            if (err) {
+                res.status(500).send("Error serving index.html. Did the build run correctly? Path: " + path.join(distPath, "index.html"));
+            }
+        });
     });
 }
 
