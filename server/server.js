@@ -60,24 +60,18 @@ app.get("/api/status", (req, res) => res.send("Server is live"));
 app.use("/api/auth", userRouter);
 app.use("/api/messages", messageRouter);
 
-// ── Serve Frontend in Production ───────────────────────────────────────────
-// Trim in case there are accidental trailing spaces in Render env vars
-const isProduction = process.env.NODE_ENV && process.env.NODE_ENV.trim() === "production";
+// ── Serve Frontend ───────────────────────────────────────────────────────────
+const distPath = path.join(__dirname, "dist");
+app.use(express.static(distPath));
 
-if (isProduction) {
-    // Serve built React/Vite files from server/dist
-    const distPath = path.join(__dirname, "dist");
-    app.use(express.static(distPath));
-    
-    // Catch-all: send index.html for any non-API route (React Router handles it)
-    app.use((req, res) => {
-        res.sendFile(path.join(distPath, "index.html"), (err) => {
-            if (err) {
-                res.status(500).send("Error serving index.html. Did the build run correctly? Path: " + path.join(distPath, "index.html"));
-            }
-        });
+// Catch-all: send index.html for any non-API route (React Router handles it)
+app.use((req, res) => {
+    res.sendFile(path.join(distPath, "index.html"), (err) => {
+        if (err) {
+            res.status(500).send("Error serving index.html. Did the build run correctly? Path: " + path.join(distPath, "index.html"));
+        }
     });
-}
+});
 
 // ── Start Server ───────────────────────────────────────────────────────────
 await connectDB();
