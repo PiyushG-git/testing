@@ -61,16 +61,10 @@ app.use("/api/auth", userRouter);
 app.use("/api/messages", messageRouter);
 
 // ── Serve Frontend ───────────────────────────────────────────────────────────
-const distPath = path.join(__dirname, "dist");
-app.use(express.static(distPath));
+app.use(express.static(path.resolve(__dirname, '..', 'dist')));
 
-// Catch-all: send index.html for any non-API route (React Router handles it)
-app.use((req, res) => {
-    res.sendFile(path.join(distPath, "index.html"), (err) => {
-        if (err) {
-            res.status(500).send("Error serving index.html. Did the build run correctly? Path: " + path.join(distPath, "index.html"));
-        }
-    });
+app.use('*name', (req, res) => {
+    res.sendFile(path.resolve(__dirname, '..', 'dist', 'index.html'))
 });
 
 // ── Start Server ───────────────────────────────────────────────────────────

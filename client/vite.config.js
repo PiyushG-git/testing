@@ -6,7 +6,6 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   build: {
-    outDir: '../server/dist',
-    emptyOutDir: true, // This is critical! It stops Vite from freezing/prompting on CI servers.
+    outDir: '../dist',
   }
 })
