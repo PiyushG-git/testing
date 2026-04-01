@@ -16,7 +16,10 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const server = http.createServer(app);
 
-const allowedOrigin = "http://localhost:5173";
+// In production, allow the deployed client URL if set, otherwise reflect the requesting origin
+const allowedOrigin = process.env.NODE_ENV === "production" 
+    ? (process.env.CLIENT_URL || true) 
+    : "http://localhost:5173";
 
 // ── Socket.IO Setup ────────────────────────────────────────────────────────
 export const io = new Server(server, {
