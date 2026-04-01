@@ -16,12 +16,7 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const server = http.createServer(app);
 
-// Same-origin in production (frontend served by this server), so no CORS needed.
-// In dev, allow Vite dev server on port 5173.
-const allowedOrigin =
-    process.env.NODE_ENV && process.env.NODE_ENV.trim() === "production"
-        ? false               // same-origin — no CORS header needed
-        : "http://localhost:5173";
+const allowedOrigin = "http://localhost:5173";
 
 // ── Socket.IO Setup ────────────────────────────────────────────────────────
 export const io = new Server(server, {
